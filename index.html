@@ -1,44 +1,95 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>yuanshen</title>
-  </head>
-  <body>
-    <div style="
-      background:lightblue;
-      text-align:center;
-      padding:10px">
-    <img src="https://webstatic.mihoyo.com/bh3/upload/officialsites/201908/ys_1565764084_7084.png" alt="yuanshen" width="210px" height="150px">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Genshin Impact</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .header, .health-advice, .links-section {
+            max-width: 2560px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }       
+        a:hover {
+            color: #004080;
+            text-decoration: underline;
+        }
+        .health-advice {
+            position: relative;
+            overflow: hidden;
+        }
+        .health-advice::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://webstatic.mihoyo.com/upload/static-resource/2021/11/08/02959a0f179436853c244dfc8b88e4e4_5824090375749016325.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: 0;
+        }
+        .health-content {
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div style="background-color: lightblue;" class="header bg-lightblue text-center py-4 px-3">
+        <img 
+            src="https://webstatic.mihoyo.com/bh3/upload/officialsites/201908/ys_1565764084_7084.png" 
+            alt="logo" 
+            class="w-40 md:w-52 h-auto mx-auto"
+        >
     </div>
-    <div style="
-      text-align:center;
-      max-width:2560px;
-      max-height:400px;
-      min-width:100px;;
-      margin:15px auto;
-      padding: 100px;
-      line-height:2.5;
-      font-size:20px;
-      background:#f1f1f1;
-      ">
-      <p>健康游戏忠告</p>
-      <p>抵制不良游戏，拒绝盗版游戏</p>
-      <p>注意自我保护，谨防受骗上当</p>
-      <p>适度游戏益脑，沉迷游戏伤身</p>
-      <p>合理安排时间，享受健康生活</p>
-      <img src="https://fastcdn.mihoyo.com/mi18n/plat_cn/m202004281054311/upload/fb9fb8e171957fc3a06322e5f19c772f_6978451248621653135.png" width="100px"/>
-      <p>米忽悠</p>
+    
+    <div class="health-advice text-center my-4 px-4 py-8 mx-auto max-w-4xl">
+        <div class="health-content">
+            <p class="text-xl font-bold mb-4">健康游戏忠告</p>
+            <p class="my-2 line-height: 1.8">抵制不良游戏，拒绝盗版游戏</p>
+            <p class="my-2 line-height: 1.8">注意自我保护，谨防受骗上当</p>
+            <p class="my-2 line-height: 1.8">适度游戏益脑，沉迷游戏伤身</p>
+            <p class="my-2 line-height: 1.8">合理安排时间，享受健康生活</p>
+            
+            <img 
+                src="https://fastcdn.mihoyo.com/mi18n/plat_cn/m202004281054311/upload/fb9fb8e171957fc3a06322e5f19c772f_6978451248621653135.png" 
+                alt="版号信息" 
+                class="w-24 h-auto mx-auto my-4"
+            >
+            <p>米忽悠</p>
+        </div>
     </div>
-    <div style="
-      background:lightblue;
-      text-align:center;
-      padding:80px
-    ">
-    <p>this is genshin impact webside</p>
-    <a  href="https://www.yuanshen.com/#/">网站 先点右边—></a> <a href="https://www.bilibili.com/video/BV1bi421h79s/?spm_id_from=333.788.recommend_more_video.6">50原石获取</a>
+    
+    <div style="background-color: lightblue;" class="links-section bg-lightblue text-center py-8 px-4">
+        <p class="text-lg mb-4">This is Genshin Impact website</p>
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
+            <a href="https://www.yuanshen.com/#/" class="flex items-center">
+                <span style="color: #0066cc;">网站</span>
+            </a>
+            <a href="https://www.bilibili.com/video/BV1bi421h79s/?spm_id_from=333.788.recommend_more_video.6" class="flex items-center">
+                <span style="color: #0066cc;">50原石获取方法</span>
+            </a>
+        </div>
     </div>
-  </body>
+    <footer class="bg-gray-800 text-white text-center py-4 mt-4">
+        <p class="text-sm">© 2025 原神相关内容 | 本页面仅作娱乐用途（不是官方）</p>
+    </footer>
+</body>
 </html>
     
