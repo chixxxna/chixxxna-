@@ -1,95 +1,433 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Genshin Impact</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayaka's Birthday</title>
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-        }
-        .header, .health-advice, .links-section {
-            max-width: 2560px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        a {
-            color: #0066cc;
-            text-decoration: none;
-            transition: color 0.3s;
-        }       
-        a:hover {
-            color: #004080;
-            text-decoration: underline;
-        }
-        .health-advice {
-            position: relative;
-            overflow: hidden;
-        }
-        .health-advice::before {
-            content: "";
-            position: absolute;
+        /* 1. 修复浅灰色加载动画：提升层级+强制全屏+样式优先级 */
+        .loader {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 100vw; /* 用vw确保满屏，避免百分比偏差 */
+            height: 100vh;
+            background-color: #f5f5f5; /* 浅灰色背景，加重透明度避免通透 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999; /* 提升层级至极高，确保覆盖所有元素 */
+            transition: transform 2.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin: 0;
+            padding: 0;
+            border: none;
+            outline: none;
+        }
+        /* 加载完成后上滑退出，确保动画生效 */
+        .loader.loaded {
+            transform: translateY(-100vh); /* 用vh确保完全滑出屏幕 */
+        }
+        /* 总进度条样式 */
+        .total-progress-container {
+            width: 60%;
+            max-width: 600px; /* 限制最大宽度，适配大屏 */
+            height: 8px;
+            background-color: rgba(150, 150, 150, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .total-progress-bar {
+            width: 0%;
             height: 100%;
-            background-image: url('https://webstatic.mihoyo.com/upload/static-resource/2021/11/08/02959a0f179436853c244dfc8b88e4e4_5824090375749016325.jpg');
+            background-color: #666;
+            border-radius: 4px;
+            transition: width 0.2s ease;
+        }
+        /* 字体加载单独进度条 */
+        .font-progress-container {
+            width: 60%;
+            max-width: 600px;
+            height: 6px;
+            background-color: rgba(150, 150, 150, 0.15);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .font-progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #4a6cf7;
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+        /* 加载文字样式，确保在浅灰背景上清晰 */
+        .load-text {
+            color: #333;
+            font-size: 18px;
+            font-family: "Microsoft YaHei", sans-serif;
+            margin-bottom: 8px;
+            text-align: center;
+            padding: 0 10px;
+        }
+        .font-load-text {
+            color: #666;
+            font-size: 14px;
+            font-family: "Microsoft YaHei", sans-serif;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        /* 2. 页面基础样式：初始隐藏，避免加载时露内容 */
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background-image: url('https://vip.123pan.cn/1811961285/yk6baz03t0n000d7w33hc0qcvemau1aeDIYPDIrzDIi1AGxvBdi1.jpg');
             background-size: cover;
             background-position: center;
-            opacity: 0.2;
-            z-index: 0;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0; /* 初始完全透明 */
+            visibility: hidden; /* 初始隐藏，避免占位 */
+            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-        .health-content {
-            position: relative;
-            z-index: 1;
+        /* 加载完成后显示页面 */
+        body.loaded {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 3. 原有页面样式，保持不变 */
+        .countdown {
+            text-align: center;
+            font-size: 16px;
+            color: #fff;
+            text-shadow: 0 0 4px rgba(0,0,0,0.5);
+        }
+        .countdown-time {
+            font-size: 48px;
+        }
+        @font-face {
+            font-family: 'Genshin';
+            src: url('http://ehb37.avtk.cn/db') format('truetype');
+            font-display: swap;
+            font-weight: normal;
+            font-style: normal;
+        }
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+        .box-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .blur-box {
+            width: 200px;
+            height: 150px;
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .box-text {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+            text-align: center;
+        }
+        .character-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        footer {
+            background-color: #334155;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            z-index: 10; /* 低于加载动画层级 */
+        }
+        footer p {
+            font-size: 10px;
+            margin: 0;           
+        }
+        .blur-box:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s;
         }
     </style>
 </head>
 <body>
-    <div style="background-color: lightblue;" class="header bg-lightblue text-center py-4 px-3">
-        <img 
-            src="https://webstatic.mihoyo.com/bh3/upload/officialsites/201908/ys_1565764084_7084.png" 
-            alt="logo" 
-            class="w-40 md:w-52 h-auto mx-auto"
-        >
-    </div>
-    
-    <div class="health-advice text-center my-4 px-4 py-8 mx-auto max-w-4xl">
-        <div class="health-content">
-            <p class="text-xl font-bold mb-4">健康游戏忠告</p>
-            <p class="my-2 line-height: 1.8">抵制不良游戏，拒绝盗版游戏</p>
-            <p class="my-2 line-height: 1.8">注意自我保护，谨防受骗上当</p>
-            <p class="my-2 line-height: 1.8">适度游戏益脑，沉迷游戏伤身</p>
-            <p class="my-2 line-height: 1.8">合理安排时间，享受健康生活</p>
-            
-            <img 
-                src="https://fastcdn.mihoyo.com/mi18n/plat_cn/m202004281054311/upload/fb9fb8e171957fc3a06322e5f19c772f_6978451248621653135.png" 
-                alt="版号信息" 
-                class="w-24 h-auto mx-auto my-4"
-            >
-            <p>米忽悠</p>
+    <!-- 加载动画容器：放在body最顶部，确保优先渲染 -->
+    <div class="loader">
+        <div class="load-text" id="totalLoadText">加载中... 0%</div>
+        <div class="total-progress-container">
+            <div class="total-progress-bar" id="totalProgressBar"></div>
+        </div>
+        <div class="font-load-text" id="fontLoadText">字体加载：0%</div>
+        <div class="font-progress-container">
+            <div class="font-progress-bar" id="fontProgressBar"></div>
         </div>
     </div>
-    
-    <div style="background-color: lightblue;" class="links-section bg-lightblue text-center py-8 px-4">
-        <p class="text-lg mb-4">This is Genshin Impact website</p>
-        <div class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8">
-            <a href="https://www.yuanshen.com/#/" class="flex items-center">
-                <span style="color: #0066cc;">网站</span>
-            </a>
-            <a href="https://www.bilibili.com/video/BV1bi421h79s/?spm_id_from=333.788.recommend_more_video.6" class="flex items-center">
-                <span style="color: #0066cc;">50原石获取方法</span>
-            </a>
+
+    <!-- 页面内容：确保在加载动画下方 -->
+    <div class="content-wrapper">
+        <div class="countdown" id="countdown"></div>
+        <div class="box-container">
+            <div class="blur-box">
+                <span class="box-text" id="gregorian-date"></span>
+                <span class="box-text" id="time"></span>
+                <span class="box-text" id="lunar-date"></span>
+            </div>
+            <div class="blur-box">
+                <span class="box-text character-name">神里绫华</span>
+                <span class="box-text">かみさと あやか</span>
+                <span class="box-text">Kamisato Ayaka</span>
+            </div>
         </div>
     </div>
-    <footer class="bg-gray-800 text-white text-center py-4 mt-4">
-        <p class="text-sm">© 2025 原神相关内容 | 本页面仅作娱乐用途（不是官方）</p>
+    <footer>
+        <p>© 2025 原神相关内容 | 本页面仅作娱乐用途（不是官方）</p>
     </footer>
+
+    <script>
+        async function initLoader() {
+            const loader = document.querySelector('.loader');
+            const totalProgressBar = document.getElementById('totalProgressBar');
+            const totalLoadText = document.getElementById('totalLoadText');
+            const fontProgressBar = document.getElementById('fontProgressBar');
+            const fontLoadText = document.getElementById('fontLoadText');
+            const body = document.body;
+            const totalDuration = 5000;
+            const updateInterval = 50;
+            const totalSteps = totalDuration / updateInterval;
+            let currentStep = 0;
+            let fontProgress = 0;
+            let isFontLoaded = false;
+
+            // 字体加载带进度反馈
+            const loadFontWithProgress = async () => {
+                return new Promise(resolve => {
+                    const fontLoadTimer = setTimeout(() => {
+                        fontProgress = 100;
+                        fontProgressBar.style.width = `${fontProgress}%`;
+                        fontLoadText.textContent = `字体加载：超时，使用备用字体`;
+                        resolve(false);
+                    }, totalDuration);
+
+                    try {
+                        const genshinFont = new FontFace('Genshin', 'url(http://ehb37.avtk.cn/db)');
+                        
+                        // 阶段1：发起请求（20%）
+                        fontProgress = 20;
+                        fontProgressBar.style.width = `${fontProgress}%`;
+                        fontLoadText.textContent = `字体加载：发起请求（20%）`;
+
+                        genshinFont.load().then(font => {
+                            // 阶段2：加载成功（100%）
+                            fontProgress = 100;
+                            fontProgressBar.style.width = `${fontProgress}%`;
+                            fontLoadText.textContent = `字体加载：成功（100%）`;
+                            
+                            document.fonts.add(font);
+                            const fontElements = document.querySelectorAll('body, .countdown, .box-text, .character-name, footer p');
+                            fontElements.forEach(elem => {
+                                elem.style.fontFamily = "'Genshin', 'Microsoft YaHei', sans-serif";
+                            });
+                            
+                            isFontLoaded = true;
+                            clearTimeout(fontLoadTimer);
+                            resolve(true);
+                        }).catch(err => {
+                            // 阶段3：加载失败（100%）
+                            fontProgress = 100;
+                            fontProgressBar.style.width = `${fontProgress}%`;
+                            fontLoadText.textContent = `字体加载：失败，使用备用字体`;
+                            clearTimeout(fontLoadTimer);
+                            resolve(false);
+                        });
+
+                        // 阶段4：加载中（逐步更新进度）
+                        const progressSimTimer = setInterval(() => {
+                            if (fontProgress < 80 && !isFontLoaded) {
+                                fontProgress += 5;
+                                fontProgressBar.style.width = `${fontProgress}%`;
+                                fontLoadText.textContent = `字体加载：加载中（${fontProgress}%）`;
+                            } else if (isFontLoaded || fontProgress >= 100) {
+                                clearInterval(progressSimTimer);
+                            }
+                        }, 200);
+                    } catch (e) {
+                        fontProgress = 100;
+                        fontProgressBar.style.width = `${fontProgress}%`;
+                        fontLoadText.textContent = `字体加载：异常，使用备用字体`;
+                        clearTimeout(fontLoadTimer);
+                        resolve(false);
+                    }
+                });
+            };
+
+            // 并行执行：字体加载 + 总进度更新
+            const [fontLoadResult] = await Promise.all([
+                loadFontWithProgress(),
+                new Promise(resolve => {
+                    const totalProgressTimer = setInterval(() => {
+                        currentStep++;
+                        const baseProgress = Math.min(Math.floor((currentStep / totalSteps) * 60), 60);
+                        const finalProgress = Math.min(baseProgress + Math.floor(fontProgress * 0.4), 100);
+                        
+                        totalProgressBar.style.width = `${finalProgress}%`;
+                        totalLoadText.textContent = isFontLoaded 
+                            ? `加载完成... ${finalProgress}%` 
+                            : `加载中... ${finalProgress}%`;
+
+                        if (finalProgress >= 100 || currentStep >= totalSteps) {
+                            clearInterval(totalProgressTimer);
+                            resolve();
+                        }
+                    }, updateInterval);
+                })
+            ]);
+
+            // 延迟触发加载动画退出，确保用户看到最终状态
+            setTimeout(() => {
+                loader.classList.add('loaded');
+                // 加载完成后显示页面
+                body.classList.add('loaded');
+                updateAllInfo();
+                setInterval(updateAllInfo, 1000);
+            }, 300);
+        }
+
+        // 页面DOM完全就绪后启动加载动画，避免渲染顺序问题
+        document.addEventListener('DOMContentLoaded', initLoader);
+
+        // 原有核心功能代码（完全保留）
+        const lunarInfo = [0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052d0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b5a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06b58,0x05ac0,0x0ab60,0x096d5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0a930,0x07954,0x06aa0,0x0ad50,0x05b52,0x04b60,0x0a6e6,0x0a4e0,0x0d260,0x0ea65,0x0d530,0x05aa0,0x076a3,0x096d0,0x04bd7,0x04ad0,0x0a4d0,0x1d0b6,0x0d250,0x0d520,0x0dd45,0x0b5a0,0x056d0,0x055b2,0x049b0,0x0a577,0x0a4b0,0x0aa50,0x1b255,0x06d20,0x0ada0];
+        const lunarMonthName = ["正","二","三","四","五","六","七","八","九","十","冬","腊"];
+        const lunarDayName = ["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
+        const zodiacName = ["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
+        const gan = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+        const zhi = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+        function getLunarDate(date) {
+            const year = date.getFullYear();
+            const baseDate = new Date(1900, 0, 31);
+            let offset = Math.floor((date - baseDate) / 86400000);
+            let i, temp = 0, leap = 0;
+            let lunarYear, lunarMonth, lunarDay, isLeap = false;
+            for (i = 1900; i < 2050 && offset > 0; i++) {
+                temp = lYearDays(i);
+                offset -= temp;
+            }
+            if (offset < 0) {
+                offset += temp;
+                i--;
+            }
+            lunarYear = i;
+            leap = leapMonth(lunarYear);
+            for (i = 1; i < 13 && offset > 0; i++) {
+                if (leap > 0 && i == (leap + 1) && !isLeap) {
+                    --i;
+                    isLeap = true;
+                    temp = leapDays(lunarYear);
+                } else {
+                    temp = monthDays(lunarYear, i);
+                }
+                if (isLeap && i == (leap + 1)) isLeap = false;
+                offset -= temp;
+            }
+            if (offset == 0 && leap > 0 && i == leap + 1) {
+                if (isLeap) {
+                    isLeap = false;
+                } else {
+                    isLeap = true;
+                    --i;
+                }
+            }
+            if (offset < 0) {
+                offset += temp;
+                --i;
+            }
+            lunarMonth = i;
+            lunarDay = offset + 1;
+            const lunarMonthStr = lunarMonthName[lunarMonth - 1] + "月";
+            const lunarDayStr = lunarDayName[lunarDay - 1];
+            const tg = gan[(lunarYear - 4) % 10];
+            const dz = zhi[(lunarYear - 4) % 12];
+            const zodiac = zodiacName[(lunarYear - 4) % 12];
+            const yearStr = tg + dz + "年";
+            return { lunarYearStr: yearStr, lunarMonthStr, lunarDayStr, zodiac };
+        }
+
+        function lYearDays(y) {
+            let i, sum = 348;
+            for (i = 0x8000; i > 0x8; i >>= 1) {
+                sum += (lunarInfo[y - 1900] & i) ? 1 : 0;
+            }
+            return sum + leapDays(y);
+        }
+
+        function leapMonth(y) {
+            return lunarInfo[y - 1900] & 0xf;
+        }
+
+        function leapDays(y) {
+            if (leapMonth(y)) {
+                return (lunarInfo[y - 1900] & 0x10000) ? 30 : 29;
+            } else {
+                return 0;
+            }
+        }
+
+        function monthDays(y, m) {
+            return ((lunarInfo[y - 1900] >> (16 - m)) & 0x1) ? 30 : 29;
+        }
+
+        function updateAllInfo() {
+            const now = new Date();
+            let targetYear = 2025;
+            const targetMonth = 8;
+            const targetDay = 28;
+            const targetDate2025 = new Date(2025, targetMonth, targetDay);
+            if (now > targetDate2025) targetYear = 2026;
+            const target = new Date(targetYear, targetMonth, targetDay);
+            const diff = target - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('countdown').innerHTML = `距离神里绫华生日 ${targetYear}.09.28 还有 <br><span class="countdown-time">${days}d ${hours}h ${minutes}m ${seconds}s</span>`;
+            const gYear = now.getFullYear();
+            const gMonth = String(now.getMonth() + 1).padStart(2, '0');
+            const gDay = String(now.getDate()).padStart(2, '0');
+            document.getElementById('gregorian-date').textContent = `${gYear}年${gMonth}月${gDay}日`;
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const sec = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('time').textContent = `${hour}:${minute}:${sec}`;
+            const lunar = getLunarDate(now);
+            document.getElementById('lunar-date').textContent = `${lunar.lunarYearStr} ${lunar.lunarMonthStr}${lunar.lunarDayStr}`;
+        }
+    </script>
 </body>
 </html>
-    
